@@ -1,10 +1,10 @@
-const Apify = require('apify');
+const { Actor } = require('apify');
 
-Apify.main(async () => {
+Actor.main(async () => {
     console.log('🚀 Iniciando MercadoLibre Scraper - Kingston Fury Beast...');
     
     // Input con el término específico
-    const input = await Apify.getInput();
+    const input = await Actor.getInput();
     const searchTerm = input?.searchTerm || 'Kingston Fury Beast DDR4 16GB';
     
     console.log(`🔍 Buscando: ${searchTerm}`);
@@ -15,7 +15,7 @@ Apify.main(async () => {
     console.log(`📄 URL de búsqueda: ${searchUrl}`);
     
     // Usar Puppeteer
-    const browser = await Apify.launchPuppeteer({
+    const browser = await Actor.launchPuppeteer({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
@@ -125,7 +125,7 @@ Apify.main(async () => {
             console.log(`  - Posición: ${product.position}`);
             
             // Guardar en Apify Dataset
-            await Apify.pushData(product);
+            await Actor.pushData(product);
         }
         
         console.log('--------------------------------------------------------------------------------');
