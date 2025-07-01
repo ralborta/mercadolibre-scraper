@@ -19,7 +19,7 @@ Actor.main(async () => {
 
     // URL de catálogo y búsqueda general
     const catalogUrl = buildCatalogUrl(searchTerm);
-    const searchUrl = `https://listado.mercadolibre.com.ar/${encodeURIComponent(searchTerm).replace(/%20/g, '-')}`;
+    const searchUrl = `https://www.mercadolibre.com.ar/search?q=${encodeURIComponent(searchTerm)}`;
     
     console.log(`📄 URL de búsqueda: ${searchUrl}`);
     
@@ -530,7 +530,7 @@ Actor.main(async () => {
                 }
                 
                 return results;
-            }, productsSelector);
+            }, productsSelector});
             
             console.log(`✅ Encontrados ${products.length} productos`);
             
