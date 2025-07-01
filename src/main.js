@@ -357,10 +357,13 @@ Actor.main(async () => {
                 console.log(`  - Título: ${product.title}`);
                 console.log(`  - Precio actual: ${product.precio}`);
                 if (product.precioOriginal) {
-                    console.log(`  - Precio original: ${product.precioOriginal}`);
+                    console.log(`  - Precio original (tachado): ${product.precioOriginal}`);
+                    console.log(`  - 🏷️  TIENE DESCUENTO: ${product.hasDiscount ? 'SÍ' : 'NO'}`);
+                } else {
+                    console.log(`  - Sin precio tachado`);
                 }
                 if (product.descuento) {
-                    console.log(`  - Descuento: ${product.descuento}`);
+                    console.log(`  - 💰 Descuento: ${product.descuento}`);
                 }
                 console.log(`  - Vendedor: ${product.seller}`);
                 console.log(`  - Ubicación: ${product.location}`);
