@@ -11,7 +11,7 @@ Actor.main(async () => {
     console.log(`🔍 Buscando: ${searchTerm}`);
     
     // URL de búsqueda estándar más flexible
-    const searchUrl = `https://listado.mercadolibre.com.ar/jm/search?as_word=${encodeURIComponent(searchTerm)}`;
+    const searchUrl = `https://listado.mercadolibre.com.ar/${encodeURIComponent(searchTerm).replace(/%20/g, '-')}`;
     
     console.log(`📄 URL de búsqueda: ${searchUrl}`);
     
