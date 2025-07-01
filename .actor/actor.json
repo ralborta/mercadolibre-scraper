@@ -1,0 +1,30 @@
+{
+  "actorSpecification": 1,
+  "name": "mercadolibre-advanced-scraper",
+  "title": "MercadoLibre Advanced Scraper",
+  "description": "Extrae datos de productos de MercadoLibre con análisis de comisiones, inteligencia competitiva y detección de oportunidades de arbitraje. Incluye análisis de precios, vendedores, stock y márgenes de ganancia.",
+  "version": "1.0",
+  "meta": {
+    "templateId": "javascript-node"
+  },
+  "input": "./INPUT_SCHEMA.json",
+  "dockerfile": "./Dockerfile",
+  "readme": "./README.md",
+  "categories": [
+    "ECOMMERCE",
+    "BUSINESS_INTELLIGENCE", 
+    "PRICE_MONITORING"
+  ],
+  "defaultRunOptions": {
+    "build": "latest",
+    "timeoutSecs": 3600,
+    "memoryMbytes": 4096
+  },
+  "example": {
+    "searchTerms": ["memoria ram", "disco ssd"],
+    "country": "argentina",
+    "maxPages": 3,
+    "includeCommissionAnalysis": true,
+    "generateReport": true
+  }
+} 

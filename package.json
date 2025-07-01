@@ -1,0 +1,33 @@
+{
+  "name": "mercadolibre-scraper",
+  "version": "1.0.0",
+  "description": "Advanced MercadoLibre scraper with commission analysis and competitive intelligence",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mercadolibre",
+    "scraper",
+    "ecommerce",
+    "price-monitoring",
+    "commission-analysis",
+    "competitive-intelligence"
+  ],
+  "author": "Raul Alborta <ralborta@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "apify": "^3.1.10",
+    "crawlee": "^3.5.8",
+    "puppeteer": "^21.0.0",
+    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.5.0",
+    "moment": "^2.29.4",
+    "csv-writer": "^1.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ralborta/mercadolibre-scraper.git"
+  }
+} 
