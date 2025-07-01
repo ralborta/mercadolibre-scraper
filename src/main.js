@@ -50,7 +50,9 @@ Actor.main(async () => {
             
             // Buscar el mejor selector disponible
             let productsSelector = null;
-            if (availableSelectors['.ui-search-result'] > 0) {
+            if (availableSelectors['.poly-card'] > 0) {
+                productsSelector = '.poly-card';
+            } else if (availableSelectors['.ui-search-result'] > 0) {
                 productsSelector = '.ui-search-result';
             } else if (availableSelectors['.ui-search-item'] > 0) {
                 productsSelector = '.ui-search-item';
@@ -58,8 +60,6 @@ Actor.main(async () => {
                 productsSelector = '[data-testid="search-result"]';
             } else if (availableSelectors['.andes-card'] > 0) {
                 productsSelector = '.andes-card';
-            } else if (availableSelectors['.poly-card'] > 0) {
-                productsSelector = '.poly-card';
             } else if (availableSelectors['article'] > 0) {
                 productsSelector = 'article';
             }
