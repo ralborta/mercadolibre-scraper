@@ -1,0 +1,166 @@
+{
+  "usableSessionsCount": 2,
+  "retiredSessionsCount": 0,
+  "sessions": [
+    {
+      "id": "session_aUt5GRdbSC",
+      "cookieJar": {
+        "version": "tough-cookie@5.1.2",
+        "storeType": "MemoryCookieStore",
+        "rejectPublicSuffixes": true,
+        "enableLooseMode": false,
+        "allowSpecialUseDomain": true,
+        "prefixSecurity": "silent",
+        "cookies": []
+      },
+      "userData": {},
+      "maxErrorScore": 3,
+      "errorScoreDecrement": 0.5,
+      "expiresAt": "2025-07-01T15:28:32.408Z",
+      "createdAt": "2025-07-01T14:38:32.408Z",
+      "usageCount": 0,
+      "maxUsageCount": 50,
+      "errorScore": 0
+    },
+    {
+      "id": "session_mBfPcaeaMv",
+      "cookieJar": {
+        "version": "tough-cookie@5.1.2",
+        "storeType": "MemoryCookieStore",
+        "rejectPublicSuffixes": true,
+        "enableLooseMode": false,
+        "allowSpecialUseDomain": true,
+        "prefixSecurity": "silent",
+        "cookies": [
+          {
+            "key": "c_ui-navigation",
+            "value": "6.6.130",
+            "expires": "2025-07-31T14:38:38.172Z",
+            "domain": "listado.mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.611Z",
+            "lastAccessed": "2025-07-01T14:38:38.611Z"
+          },
+          {
+            "key": "_mldataSessionId",
+            "value": "72437481-8fc6-4f61-b2a4-66af0d35806d",
+            "expires": "2025-07-01T15:08:38.172Z",
+            "domain": "listado.mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.611Z",
+            "lastAccessed": "2025-07-01T14:38:38.611Z"
+          },
+          {
+            "key": "categories",
+            "expires": "2025-07-01T15:28:38.608Z",
+            "domain": "mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.612Z",
+            "lastAccessed": "2025-07-01T14:38:38.612Z"
+          },
+          {
+            "key": "_mldataSessionId",
+            "value": "72437481-8fc6-4f61-b2a4-66af0d35806d",
+            "expires": "2025-07-01T15:08:38.000Z",
+            "domain": "mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.615Z",
+            "lastAccessed": "2025-07-01T14:38:38.615Z"
+          },
+          {
+            "key": "last_query",
+            "value": "kingston%20fury%20beast%20ddr4%2016gb",
+            "expires": "2025-07-01T15:28:38.608Z",
+            "domain": "mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.617Z",
+            "lastAccessed": "2025-07-01T14:38:38.617Z"
+          },
+          {
+            "key": "_csrf",
+            "value": "CWp1j5MQ6uYMcR7fzuB2nLbL",
+            "expires": "2025-07-01T15:28:38.608Z",
+            "domain": "listado.mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": true,
+            "creation": "2025-07-01T14:38:38.617Z",
+            "lastAccessed": "2025-07-01T14:38:38.617Z"
+          },
+          {
+            "key": "main_attributes",
+            "expires": "2025-07-01T15:28:38.608Z",
+            "domain": "mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.617Z",
+            "lastAccessed": "2025-07-01T14:38:38.617Z"
+          },
+          {
+            "key": "backend_dejavu_info",
+            "value": "j%3A%7B%7D",
+            "expires": "2025-07-01T15:28:38.608Z",
+            "domain": "mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.617Z",
+            "lastAccessed": "2025-07-01T14:38:38.617Z"
+          },
+          {
+            "key": "category",
+            "value": "MLA1694",
+            "expires": "2025-07-01T15:28:38.608Z",
+            "domain": "mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.617Z",
+            "lastAccessed": "2025-07-01T14:38:38.617Z"
+          },
+          {
+            "key": "main_domain",
+            "expires": "2025-07-01T15:28:38.609Z",
+            "domain": "mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.617Z",
+            "lastAccessed": "2025-07-01T14:38:38.617Z"
+          },
+          {
+            "key": "_d2id",
+            "value": "11dba25a-086f-4c4e-b92d-35ad53c089c2-n",
+            "expires": "2026-07-01T14:38:37.511Z",
+            "domain": "mercadolibre.com.ar",
+            "path": "/",
+            "secure": true,
+            "hostOnly": false,
+            "creation": "2025-07-01T14:38:38.617Z",
+            "lastAccessed": "2025-07-01T14:38:38.617Z"
+          }
+        ]
+      },
+      "userData": {},
+      "maxErrorScore": 3,
+      "errorScoreDecrement": 0.5,
+      "expiresAt": "2025-07-01T15:28:32.422Z",
+      "createdAt": "2025-07-01T14:38:32.422Z",
+      "usageCount": 1,
+      "maxUsageCount": 50,
+      "errorScore": 0
+    }
+  ]
+}
