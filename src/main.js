@@ -155,17 +155,68 @@ Actor.main(async () => {
                         const freeShipping = shippingElement?.textContent?.includes('gratis') || 
                                            shippingElement?.textContent?.includes('Gratis') || false;
                         
-                        // VENDEDOR/TIENDA OFICIAL
+                        // VENDEDOR/TIENDA OFICIAL - Mejorado con más selectores y debug
                         const sellerElement = item.querySelector('.ui-search-official-store-label') ||
                                             item.querySelector('.ui-search-item__store-name') ||
-                                            item.querySelector('[data-testid="store-name"]');
-                        const seller = sellerElement?.textContent?.trim() || 'Vendedor particular';
+                                            item.querySelector('[data-testid="store-name"]') ||
+                                            item.querySelector('.ui-search-item__group__element--store') ||
+                                            item.querySelector('.ui-search-item__seller') ||
+                                            item.querySelector('.seller-info') ||
+                                            item.querySelector('.ui-search-item__subtitle') ||
+                                            item.querySelector('.ui-search-item__group__element--subtitle');
                         
-                        // UBICACIÓN
+                        // Debug: Buscar cualquier texto que pueda ser el vendedor
+                        const sellerDebug = item.querySelector('.ui-search-item__group') ? 
+                            Array.from(item.querySelectorAll('.ui-search-item__group *')).map(el => el.textContent?.trim()).filter(text => text && text.length > 0) : [];
+                        
+                        let seller = sellerElement?.textContent?.trim() || '';
+                        
+                        // Si no encontramos vendedor, buscar en los textos de debug
+                        if (!seller || seller === '') {
+                            // Buscar patrones comunes de vendedores
+                            const vendorPatterns = sellerDebug.filter(text => 
+                                text.includes('Tienda') || 
+                                text.includes('Store') || 
+                                text.includes('MercadoShops') ||
+                                text.includes('Oficial') ||
+                                (text.length > 3 && text.length < 50 && !text.includes('$') && !text.includes('cuotas') && !text.includes('gratis'))
+                            );
+                            
+                            if (vendorPatterns.length > 0) {
+                                seller = vendorPatterns[0];
+                            }
+                        }
+                        
+                        if (!seller || seller === '') {
+                            seller = 'Vendedor particular';
+                        }
+                        
+                        console.log(`[DEBUG] Item ${i} - Seller debug:`, sellerDebug.slice(0, 5)); // Solo los primeros 5 para no saturar
+                        
+                        // UBICACIÓN - Mejorado
                         const locationElement = item.querySelector('.ui-search-item__group__element--location') ||
                                               item.querySelector('[data-testid="location"]') ||
-                                              item.querySelector('.item-location');
-                        const location = locationElement?.textContent?.trim() || '';
+                                              item.querySelector('.item-location') ||
+                                              item.querySelector('.ui-search-item__location') ||
+                                              item.querySelector('.ui-search-item__group__element--subtitle');
+                        
+                        let location = locationElement?.textContent?.trim() || '';
+                        
+                        // Si no encontramos ubicación, buscar en los textos de debug del seller
+                        if (!location || location === '') {
+                            const locationPatterns = sellerDebug.filter(text => 
+                                text.includes('Capital') || 
+                                text.includes('Buenos Aires') || 
+                                text.includes('Córdoba') ||
+                                text.includes('Mendoza') ||
+                                text.includes('Rosario') ||
+                                (text.includes('Federal') || text.includes('Provincia'))
+                            );
+                            
+                            if (locationPatterns.length > 0) {
+                                location = locationPatterns[0];
+                            }
+                        }
                         
                         // VENDIDOS (cantidad)
                         const soldElement = item.querySelector('.ui-search-item__group__element--sold') ||
@@ -266,43 +317,4 @@ Actor.main(async () => {
                 console.log(`Procesando: ${product.productId}`);
                 console.log(`  - Status: ${product.status}`);
                 console.log(`  - Título: ${product.title}`);
-                console.log(`  - Precio actual: ${product.precio}`);
-                if (product.precioOriginal) {
-                    console.log(`  - Precio original: ${product.precioOriginal}`);
-                }
-                if (product.descuento) {
-                    console.log(`  - Descuento: ${product.descuento}`);
-                }
-                if (product.hasDiscount) {
-                    console.log(`  - Porcentaje descuento: ${product.discountPercentage}%`);
-                }
-                console.log(`  - Vendedor: ${product.seller}`);
-                console.log(`  - Ubicación: ${product.location}`);
-                console.log(`  - Condición: ${product.condition}`);
-                console.log(`  - Envío gratis: ${product.freeShipping}`);
-                console.log(`  - Vendidos: ${product.soldQuantity}`);
-                if (product.installments) {
-                    console.log(`  - Cuotas: ${product.installments}`);
-                }
-                if (product.rating) {
-                    console.log(`  - Rating: ${product.rating} (${product.reviewsCount} reviews)`);
-                }
-                console.log(`  - Tipo publicación: ${product.publicationType}`);
-                console.log(`  - Link: ${product.link}`);
-                console.log(`  - Imagen: ${product.imageUrl}`);
-                console.log(`  - Posición: ${product.position}`);
-                
-                // Guardar en Apify Dataset
-                await Actor.pushData(product);
-            }
-            
-            console.log('--------------------------------------------------------------------------------');
-            console.log(`Total procesados: ${totalProcessed}`);
-        }
-    });
-    
-    // Ejecutar el crawler con la URL
-    await crawler.run([searchUrl]);
-    
-    console.log('🎉 ¡Scraping completado exitosamente!');
-}); 
+                console.log(`
