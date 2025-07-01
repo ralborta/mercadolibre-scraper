@@ -269,6 +269,43 @@ Actor.main(async () => {
                         const conditionElement = item.querySelector('.ui-search-item__group__element--condition');
                         const condition = conditionElement?.textContent?.trim() || 'N/A';
                         
+                        // Cuotas/Financiamiento - Mejorado
+                        const installmentSelectors = [
+                            '.ui-search-item__group__element--installments',
+                            '.ui-search-installments',
+                            '[data-testid="installments"]',
+                            '.item-installments',
+                            '.ui-search-item__installments'
+                        ];
+                        
+                        let installments = '';
+                        for (const selectorInst of installmentSelectors) {
+                            const installmentElement = item.querySelector(selectorInst);
+                            if (installmentElement && installmentElement.textContent.trim()) {
+                                installments = installmentElement.textContent.trim();
+                                break;
+                            }
+                        }
+                        
+                        // Si no encontramos cuotas, buscar en todos los textos
+                        if (!installments || installments === '') {
+                            const cuotasPatterns = allGroupTexts.filter(text => 
+                                text.includes('cuotas') ||
+                                text.includes('sin interés') ||
+                                text.includes('x $') ||
+                                text.match(/\d+x\s*\$/) ||
+                                text.includes('Hasta') && text.includes('cuotas')
+                            );
+                            
+                            if (cuotasPatterns.length > 0) {
+                                installments = cuotasPatterns[0];
+                            }
+                        }
+                        
+                        // Detectar si tiene financiamiento
+                        const hasFinancing = installments && installments !== '' && 
+                                           (installments.includes('cuotas') || installments.includes('x $'));
+                        
                         // Imagen
                         const imageElement = item.querySelector('img');
                         const imageUrl = imageElement?.src || imageElement?.getAttribute('data-src') || '';
@@ -293,7 +330,9 @@ Actor.main(async () => {
                                 freeShipping,
                                 soldQuantity,
                                 imageUrl,
-                                hasDiscount: originalPrice && price && originalPrice !== price
+                                hasDiscount: originalPrice && price && originalPrice !== price,
+                                installments,
+                                hasFinancing
                             });
                         }
                         
@@ -328,6 +367,12 @@ Actor.main(async () => {
                 console.log(`  - Condición: ${product.condition}`);
                 console.log(`  - Envío gratis: ${product.freeShipping}`);
                 console.log(`  - Vendidos: ${product.soldQuantity}`);
+                if (product.installments) {
+                    console.log(`  - Cuotas: ${product.installments}`);
+                    console.log(`  - Financiamiento disponible: ${product.hasFinancing ? 'SÍ' : 'NO'}`);
+                } else {
+                    console.log(`  - Cuotas: No disponible`);
+                }
                 console.log(`  - Link: ${product.link}`);
                 console.log(`  - Posición: ${product.position}`);
                 
