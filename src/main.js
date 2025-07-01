@@ -194,6 +194,36 @@ Actor.main(async () => {
                             console.log(`[DEBUG VENDEDOR] Item ${i}:`);
                             console.log(`  - Textos encontrados:`, allGroupTexts);
                             console.log(`  - Vendedor final: "${seller}"`);
+                            console.log(`  - HTML del item:`, item.outerHTML.substring(0, 500) + '...');
+                        }
+                        
+                        // FILTRO: Solo mostrar si NO es vendedor particular
+                        const esVendedorParticular = seller === 'Vendedor particular';
+                        
+                        // Intentar detectar tiendas de otra manera
+                        if (esVendedorParticular) {
+                            // Buscar en TODOS los elementos del item
+                            const allTexts = Array.from(item.querySelectorAll('*')).map(el => el.textContent?.trim()).filter(text => text && text.length > 0);
+                            
+                            // Buscar patrones de tienda en todos los textos
+                            const tiendaPatterns = allTexts.filter(text => 
+                                text.includes('MercadoShops') ||
+                                text.includes('Tienda Oficial') ||
+                                text.includes('Store') ||
+                                text.includes('Shop') ||
+                                (text.match(/^[A-Z][a-zA-Z\s]{4,30}$/) && !text.includes('$') && !text.includes('cuotas') && !text.includes('gratis'))
+                            );
+                            
+                            if (tiendaPatterns.length > 0) {
+                                seller = tiendaPatterns[0];
+                                console.log(`[DETECTADO] Tienda encontrada: "${seller}"`);
+                            }
+                        }
+                        
+                        // Solo continuar si NO es vendedor particular (filtrar solo comercios)
+                        if (seller === 'Vendedor particular') {
+                            console.log(`[FILTRADO] Saltando vendedor particular: ${title}`);
+                            continue; // Saltar este producto
                         }
                         
                         // Ubicación - Mejorado también
