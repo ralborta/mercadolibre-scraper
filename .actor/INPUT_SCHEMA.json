@@ -9,15 +9,13 @@
       "type": "array",
       "description": "Lista de productos o términos a buscar en MercadoLibre",
       "editor": "stringList",
-      "default": ["memoria ram", "disco ssd"],
-      "prefill": ["memoria ram", "disco ssd"]
+      "default": ["memoria ram", "disco ssd"]
     },
     "country": {
       "title": "País de MercadoLibre",
       "type": "string",
       "description": "Selecciona el país de MercadoLibre a scrapear",
       "enum": ["argentina", "mexico", "colombia", "chile", "peru", "uruguay"],
-      "enumTitles": ["Argentina (.com.ar)", "México (.com.mx)", "Colombia (.com.co)", "Chile (.cl)", "Perú (.com.pe)", "Uruguay (.com.uy)"],
       "default": "argentina"
     },
     "maxPages": {
@@ -30,68 +28,23 @@
     },
     "minPrice": {
       "title": "Precio mínimo",
-      "type": "number",
-      "description": "Precio mínimo de productos a incluir (en moneda local)",
+      "type": "integer",
+      "description": "Precio mínimo de productos a incluir",
       "minimum": 0,
       "default": 0
     },
     "maxPrice": {
-      "title": "Precio máximo",
-      "type": "number",
-      "description": "Precio máximo de productos a incluir (en moneda local)",
+      "title": "Precio máximo", 
+      "type": "integer",
+      "description": "Precio máximo de productos a incluir",
       "minimum": 1,
       "default": 999999
-    },
-    "includePromotions": {
-      "title": "Incluir promociones",
-      "type": "boolean",
-      "description": "Extraer información sobre promociones y descuentos",
-      "default": true
     },
     "includeCommissionAnalysis": {
       "title": "Análisis de comisiones",
       "type": "boolean",
       "description": "Calcular comisiones de MercadoLibre y márgenes de ganancia",
       "default": true
-    },
-    "includeSellerData": {
-      "title": "Datos del vendedor",
-      "type": "boolean",
-      "description": "Extraer información detallada de los vendedores",
-      "default": true
-    },
-    "includeProductAttributes": {
-      "title": "Atributos del producto",
-      "type": "boolean",
-      "description": "Extraer especificaciones técnicas y atributos",
-      "default": true
-    },
-    "outputFormat": {
-      "title": "Formato de salida",
-      "type": "string",
-      "description": "Formato en el que se exportarán los datos",
-      "enum": ["json", "csv", "excel"],
-      "enumTitles": ["JSON", "CSV", "Excel"],
-      "default": "json"
-    },
-    "generateReport": {
-      "title": "Generar reporte de análisis",
-      "type": "boolean",
-      "description": "Crear un reporte con estadísticas y análisis de mercado",
-      "default": true
-    },
-    "detectArbitrage": {
-      "title": "Detectar oportunidades de arbitraje",
-      "type": "boolean",
-      "description": "Identificar productos similares con diferencias de precio significativas",
-      "default": true
-    },
-    "proxyConfiguration": {
-      "title": "Configuración de proxy",
-      "type": "object",
-      "description": "Configuración opcional de proxies para evitar bloqueos",
-      "editor": "proxy",
-      "prefill": { "useApifyProxy": true }
     }
   },
   "required": ["searchTerms", "country"]
