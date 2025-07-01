@@ -1,51 +1,16 @@
 {
-  "title": "MercadoLibre Advanced Scraper",
-  "description": "Extrae datos de productos de MercadoLibre con análisis de comisiones y inteligencia competitiva",
+  "title": "MercadoLibre Scraper Simple",
+  "description": "Scraper simple para MercadoLibre Argentina",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "searchTerms": {
-      "title": "Términos de búsqueda",
-      "type": "array",
-      "description": "Lista de productos o términos a buscar en MercadoLibre",
-      "editor": "stringList",
-      "default": ["memoria ram", "disco ssd"]
-    },
-    "country": {
-      "title": "País de MercadoLibre",
+    "searchTerm": {
+      "title": "Término de búsqueda",
       "type": "string",
-      "description": "Selecciona el país de MercadoLibre a scrapear",
-      "enum": ["argentina", "mexico", "colombia", "chile", "peru", "uruguay"],
-      "default": "argentina"
-    },
-    "maxPages": {
-      "title": "Máximo de páginas",
-      "type": "integer",
-      "description": "Número máximo de páginas a procesar por término de búsqueda",
-      "minimum": 1,
-      "maximum": 20,
-      "default": 5
-    },
-    "minPrice": {
-      "title": "Precio mínimo",
-      "type": "integer",
-      "description": "Precio mínimo de productos a incluir",
-      "minimum": 0,
-      "default": 0
-    },
-    "maxPrice": {
-      "title": "Precio máximo", 
-      "type": "integer",
-      "description": "Precio máximo de productos a incluir",
-      "minimum": 1,
-      "default": 999999
-    },
-    "includeCommissionAnalysis": {
-      "title": "Análisis de comisiones",
-      "type": "boolean",
-      "description": "Calcular comisiones de MercadoLibre y márgenes de ganancia",
-      "default": true
+      "description": "¿Qué producto quieres buscar?",
+      "default": "memoria ram",
+      "example": "memoria ram"
     }
   },
-  "required": ["searchTerms", "country"]
+  "required": ["searchTerm"]
 } 
