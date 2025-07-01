@@ -10,11 +10,74 @@ Actor.main(async () => {
     
     console.log(`🔍 Buscando: ${searchTerm}`);
     
-    // URL de búsqueda estándar más flexible
+    // Función para armar la URL de catálogo
+    function buildCatalogUrl(term) {
+        // Quitar tildes y caracteres especiales, pasar a minúsculas y reemplazar espacios por guiones
+        const normalized = term.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+        return `https://www.mercadolibre.com.ar/catalogo/${normalized}`;
+    }
+
+    // URL de catálogo y búsqueda general
+    const catalogUrl = buildCatalogUrl(searchTerm);
     const searchUrl = `https://listado.mercadolibre.com.ar/${encodeURIComponent(searchTerm).replace(/%20/g, '-')}`;
     
     console.log(`📄 URL de búsqueda: ${searchUrl}`);
     
+    // Función para scrapear una URL y devolver la cantidad de productos encontrados
+    async function scrapeAndCount(url) {
+        let foundProducts = 0;
+        const crawler = new PuppeteerCrawler({
+            async requestHandler({ page, request }) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                const availableSelectors = await page.evaluate(() => {
+                    const selectors = [
+                        '.ui-search-result', '.ui-search-item', '[data-testid="search-result"]', '.poly-card', 'article'
+                    ];
+                    const found = {};
+                    selectors.forEach(selector => {
+                        found[selector] = document.querySelectorAll(selector).length;
+                    });
+                    return found;
+                });
+                // Buscar el mejor selector disponible
+                let productsSelector = null;
+                if (availableSelectors['.poly-card'] > 0) {
+                    productsSelector = '.poly-card';
+                } else if (availableSelectors['.ui-search-result'] > 0) {
+                    productsSelector = '.ui-search-result';
+                } else if (availableSelectors['.ui-search-item'] > 0) {
+                    productsSelector = '.ui-search-item';
+                } else if (availableSelectors['[data-testid="search-result"]'] > 0) {
+                    productsSelector = '[data-testid="search-result"]';
+                } else if (availableSelectors['article'] > 0) {
+                    productsSelector = 'article';
+                }
+                if (productsSelector) {
+                    foundProducts = await page.evaluate((selector) => document.querySelectorAll(selector).length, productsSelector);
+                }
+            },
+            maxRequestsPerCrawl: 1,
+        });
+        await crawler.run([url]);
+        return foundProducts;
+    }
+
+    // 1. Intentar catálogo
+    console.log(`🔎 Probando catálogo: ${catalogUrl}`);
+    let productsInCatalog = await scrapeAndCount(catalogUrl);
+    let finalUrl = catalogUrl;
+    if (productsInCatalog === 0) {
+        // 2. Si no hay productos, usar búsqueda general
+        console.log('❌ No se encontraron productos en el catálogo. Probando búsqueda general...');
+        productsInCatalog = await scrapeAndCount(searchUrl);
+        finalUrl = searchUrl;
+        if (productsInCatalog === 0) {
+            console.log('❌ No se encontraron productos en la búsqueda general.');
+            return;
+        }
+    }
+    console.log(`✅ Se encontraron ${productsInCatalog} productos en: ${finalUrl}`);
+
     // Usar PuppeteerCrawler para una sola URL
     const crawler = new PuppeteerCrawler({
         async requestHandler({ page, request }) {
@@ -525,7 +588,7 @@ Actor.main(async () => {
     });
     
     // Ejecutar el crawler con la URL
-    await crawler.run([searchUrl]);
+    await crawler.run([finalUrl]);
     
     console.log('🎉 ¡Scraping completado exitosamente!');
 });
