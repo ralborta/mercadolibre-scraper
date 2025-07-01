@@ -7,8 +7,8 @@ WORKDIR /usr/src/app
 # Copiar archivos de configuración primero
 COPY package*.json ./
 
-# Instalar dependencias con configuración optimizada
-RUN npm ci --only=production --no-audit --no-fund \
+# Instalar dependencias con npm install en lugar de npm ci
+RUN npm install --only=production --no-audit --no-fund \
     && echo "Dependencias instaladas correctamente" \
     && npm cache clean --force
 
