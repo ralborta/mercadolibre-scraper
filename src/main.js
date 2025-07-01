@@ -10,8 +10,8 @@ Actor.main(async () => {
     
     console.log(`🔍 Buscando: ${searchTerm}`);
     
-    // URL específica para Argentina
-    const searchUrl = `https://listado.mercadolibre.com.ar/${encodeURIComponent(searchTerm)}`;
+    // URL de búsqueda estándar más flexible
+    const searchUrl = `https://listado.mercadolibre.com.ar/jm/search?as_word=${encodeURIComponent(searchTerm)}`;
     
     console.log(`📄 URL de búsqueda: ${searchUrl}`);
     
@@ -20,10 +20,15 @@ Actor.main(async () => {
         async requestHandler({ page, request }) {
             console.log('✅ Página cargada, extrayendo productos...');
             
+            // Esperar a que aparezcan los productos
+            await page.waitForSelector('.ui-search-result', { timeout: 10000 });
+            
             // Extraer productos con todos los detalles
             const products = await page.evaluate(() => {
                 const items = document.querySelectorAll('.ui-search-result');
                 const results = [];
+                
+                console.log(`Encontrados ${items.length} elementos .ui-search-result`);
                 
                 for (let i = 0; i < Math.min(15, items.length); i++) {
                     const item = items[i];
@@ -33,7 +38,7 @@ Actor.main(async () => {
                         const titleElement = item.querySelector('.ui-search-item__title');
                         const title = titleElement?.textContent?.trim();
                         
-                        const linkElement = item.querySelector('a.ui-search-link');
+                        const linkElement = item.querySelector('a.ui-search-link') || item.querySelector('a');
                         const link = linkElement?.href;
                         
                         // Extraer ID del producto (MLA...)
@@ -63,6 +68,8 @@ Actor.main(async () => {
                         // Ubicación
                         const locationElement = item.querySelector('.ui-search-item__group__element--location');
                         const location = locationElement?.textContent?.trim() || '';
+                        
+                        console.log(`Item ${i}: title="${title}", price="${price}", productId="${productId}"`);
                         
                         // Solo agregar si tiene los datos mínimos
                         if (title && price && productId) {
