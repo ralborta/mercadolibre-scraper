@@ -530,7 +530,7 @@ Actor.main(async () => {
                 }
                 
                 return results;
-            }, productsSelector});
+            }, productsSelector);
             
             console.log(`✅ Encontrados ${products.length} productos`);
             
