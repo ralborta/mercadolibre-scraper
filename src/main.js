@@ -20,8 +20,8 @@ Actor.main(async () => {
         async requestHandler({ page, request }) {
             console.log('✅ Página cargada, investigando selectores disponibles...');
             
-            // Esperar a que cargue la página
-            await page.waitForTimeout(3000);
+            // Esperar a que cargue la página (compatible)
+            await new Promise(resolve => setTimeout(resolve, 3000));
             
             // Investigar qué selectores están disponibles
             const availableSelectors = await page.evaluate(() => {
