@@ -1,17 +1,22 @@
-# Usar la imagen base oficial de Apify con Node.js y navegadores
-FROM apify/actor-node-puppeteer-chrome:18
+# Usar imagen base más estable
+FROM apify/actor-node-puppeteer-chrome:20
 
-# Copiar archivos del proyecto
+# Configurar el directorio de trabajo
+WORKDIR /usr/src/app
+
+# Copiar archivos de configuración primero
 COPY package*.json ./
 
-# Instalar dependencias
-RUN npm --quiet set progress=false \
-    && npm install --omit=dev --omit=optional \
-    && echo "Instaladas dependencias del Actor" \
-    && rm -r ~/.npm
+# Instalar dependencias con configuración optimizada
+RUN npm ci --only=production --no-audit --no-fund \
+    && echo "Dependencias instaladas correctamente" \
+    && npm cache clean --force
 
-# Copiar código fuente
+# Copiar el resto del código
 COPY . ./
 
-# Ejecutar el Actor
+# Configurar permisos
+RUN chmod +x src/main.js
+
+# Comando de inicio
 CMD npm start 

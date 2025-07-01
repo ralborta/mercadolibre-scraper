@@ -1,6 +1,5 @@
 const Apify = require('apify');
 const { PuppeteerCrawler, Dataset } = require('crawlee');
-const { extractProductData, calculateCommissions, formatPrice } = require('./utils');
 
 Apify.main(async () => {
     console.log('🚀 Iniciando MercadoLibre Scraper Avanzado...');
@@ -9,13 +8,13 @@ Apify.main(async () => {
     const input = await Apify.getInput();
     const {
         searchTerms = ['memoria ram'],
-        country = 'argentina', // argentina, mexico, colombia, chile
+        country = 'argentina',
         maxPages = 5,
         minPrice = 0,
         maxPrice = 999999,
         includePromotions = true,
         includeCommissionAnalysis = true,
-        outputFormat = 'json' // json, csv, excel
+        outputFormat = 'json'
     } = input;
 
     console.log('📝 Configuración:', {
@@ -32,7 +31,9 @@ Apify.main(async () => {
         argentina: 'mercadolibre.com.ar',
         mexico: 'mercadolibre.com.mx',
         colombia: 'mercadolibre.com.co',
-        chile: 'mercadolibre.cl'
+        chile: 'mercadolibre.cl',
+        peru: 'mercadolibre.com.pe',
+        uruguay: 'mercadolibre.com.uy'
     };
     
     const baseUrl = `https://${domains[country]}`;
@@ -53,9 +54,9 @@ Apify.main(async () => {
                 ]
             }
         },
-        maxRequestsPerCrawl: maxPages * 50, // ~50 productos por página
-        maxConcurrency: 3,
-        requestHandlerTimeoutSecs: 120,
+        maxRequestsPerCrawl: maxPages * 50,
+        maxConcurrency: 2,
+        requestHandlerTimeoutSecs: 60,
         
         async requestHandler({ page, request, log }) {
             const url = request.url;
@@ -63,7 +64,7 @@ Apify.main(async () => {
             
             try {
                 // Esperar a que cargue la página
-                await page.waitForSelector('[data-testid="results-section-title"]', { timeout: 30000 });
+                await page.waitForSelector('.ui-search-result', { timeout: 30000 });
                 
                 // Extraer productos de la página
                 const products = await page.evaluate(() => {
@@ -72,7 +73,6 @@ Apify.main(async () => {
                     
                     productElements.forEach((element, index) => {
                         try {
-                            // Extraer datos básicos
                             const titleElement = element.querySelector('.ui-search-item__title');
                             const priceElement = element.querySelector('.andes-money-amount__fraction');
                             const linkElement = element.querySelector('.ui-search-item__group__element a');
@@ -121,7 +121,9 @@ Apify.main(async () => {
                                 location,
                                 freeShipping,
                                 extractedAt: new Date().toISOString(),
-                                position: index + 1
+                                position: index + 1,
+                                searchTerm: 'memoria ram',
+                                country: 'argentina'
                             });
                             
                         } catch (error) {
@@ -134,59 +136,13 @@ Apify.main(async () => {
                 
                 log.info(`✅ Extraídos ${products.length} productos de la página`);
                 
-                // Procesar cada producto para obtener datos detallados
+                // Filtrar por precio y guardar
                 for (const product of products) {
-                    if (!product.productId) continue;
-                    
-                    try {
-                        // Obtener datos detallados del producto
-                        const detailedData = await extractProductData(product.productId, baseUrl, page);
-                        
-                        // Calcular comisiones si está habilitado
-                        let commissionData = {};
-                        if (includeCommissionAnalysis && detailedData.price) {
-                            commissionData = calculateCommissions(
-                                detailedData.price, 
-                                detailedData.category,
-                                detailedData.publicationType
-                            );
-                        }
-                        
-                        // Combinar todos los datos
-                        const finalProduct = {
-                            ...product,
-                            ...detailedData,
-                            ...commissionData,
-                            searchTerm: request.userData.searchTerm,
-                            country: country,
-                            scrapedAt: new Date().toISOString()
-                        };
-                        
-                        // Filtrar por precio si está configurado
-                        const numericPrice = parseFloat(finalProduct.price?.replace(/[^\d]/g, '') || '0');
-                        if (numericPrice >= minPrice && numericPrice <= maxPrice) {
-                            await Dataset.pushData(finalProduct);
-                            log.info(`💾 Guardado: ${finalProduct.title} - $${numericPrice}`);
-                        }
-                        
-                    } catch (error) {
-                        log.error(`❌ Error procesando producto ${product.productId}:`, error);
+                    const numericPrice = parseFloat(product.price?.replace(/[^\d]/g, '') || '0');
+                    if (numericPrice >= minPrice && numericPrice <= maxPrice) {
+                        await Dataset.pushData(product);
+                        log.info(`💾 Guardado: ${product.title} - $${numericPrice}`);
                     }
-                }
-                
-                // Buscar siguiente página
-                const nextPageLink = await page.$eval('.andes-pagination__button--next:not(.andes-pagination__button--disabled)', 
-                    el => el.href).catch(() => null);
-                
-                if (nextPageLink && request.userData.currentPage < maxPages) {
-                    await crawler.addRequests([{
-                        url: nextPageLink,
-                        userData: {
-                            ...request.userData,
-                            currentPage: request.userData.currentPage + 1
-                        }
-                    }]);
-                    log.info(`➡️ Agregada página siguiente: ${request.userData.currentPage + 1}`);
                 }
                 
             } catch (error) {
@@ -200,16 +156,13 @@ Apify.main(async () => {
         }
     });
     
-    // Generar URLs de búsqueda para cada término
+    // Generar URLs de búsqueda
     const requests = [];
     for (const searchTerm of searchTerms) {
         const searchUrl = `${baseUrl}/sitios/search?q=${encodeURIComponent(searchTerm)}`;
         requests.push({
             url: searchUrl,
-            userData: {
-                searchTerm,
-                currentPage: 1
-            }
+            userData: { searchTerm }
         });
     }
     
@@ -223,25 +176,6 @@ Apify.main(async () => {
     const { items } = await dataset.getData();
     
     console.log(`🎉 Scraping completado! Total de productos: ${items.length}`);
-    
-    // Generar estadísticas
-    const stats = {
-        totalProducts: items.length,
-        averagePrice: items.reduce((sum, item) => {
-            const price = parseFloat(item.price?.replace(/[^\d]/g, '') || '0');
-            return sum + price;
-        }, 0) / items.length,
-        priceRange: {
-            min: Math.min(...items.map(item => parseFloat(item.price?.replace(/[^\d]/g, '') || '0'))),
-            max: Math.max(...items.map(item => parseFloat(item.price?.replace(/[^\d]/g, '') || '0')))
-        },
-        topSellers: [...new Set(items.map(item => item.seller))].slice(0, 10),
-        categoriesFound: [...new Set(items.map(item => item.category))],
-        completedAt: new Date().toISOString()
-    };
-    
-    await Apify.setValue('STATS', stats);
-    console.log('📊 Estadísticas guardadas:', stats);
     
     console.log('✅ Actor completado exitosamente!');
 }); 
