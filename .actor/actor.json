@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "mercadolibre-advanced-scraper",
-  "title": "MercadoLibre Advanced Scraper",
-  "description": "Extrae datos de productos de MercadoLibre con análisis de comisiones, inteligencia competitiva y detección de oportunidades de arbitraje. Incluye análisis de precios, vendedores, stock y márgenes de ganancia.",
+  "title": "🛒 MercadoLibre Advanced Scraper - Commission Analysis & Arbitrage Detection",
+  "description": "🚀 Extract MercadoLibre products with commission analysis, competitive intelligence and arbitrage opportunities detection. Multi-country support (AR, MX, CO, CL, PE, UY). Perfect for sellers, dropshippers and market analysts. Get real profit margins, seller insights and market reports.",
   "version": "1.0",
   "meta": {
     "templateId": "javascript-node"
@@ -25,6 +25,7 @@
     "country": "argentina",
     "maxPages": 3,
     "includeCommissionAnalysis": true,
-    "generateReport": true
+    "generateReport": true,
+    "detectArbitrage": true
   }
 } 
