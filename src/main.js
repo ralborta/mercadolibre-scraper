@@ -18,74 +18,137 @@ Actor.main(async () => {
     // Usar PuppeteerCrawler para una sola URL
     const crawler = new PuppeteerCrawler({
         async requestHandler({ page, request }) {
-            console.log('✅ Página cargada, extrayendo productos...');
+            console.log('✅ Página cargada, investigando selectores disponibles...');
             
-            // Esperar a que aparezcan los productos
-            await page.waitForSelector('.ui-search-result', { timeout: 10000 });
+            // Esperar a que cargue la página
+            await page.waitForTimeout(3000);
             
-            // Extraer productos con todos los detalles
-            const products = await page.evaluate(() => {
-                const items = document.querySelectorAll('.ui-search-result');
+            // Investigar qué selectores están disponibles
+            const availableSelectors = await page.evaluate(() => {
+                const selectors = [
+                    '.ui-search-result',
+                    '.ui-search-item',
+                    '.ui-search-item__title',
+                    '[data-testid="search-result"]',
+                    '.ui-search-cards-grid',
+                    '.ui-search-results',
+                    '.andes-card',
+                    '.poly-card',
+                    'article'
+                ];
+                
+                const found = {};
+                selectors.forEach(selector => {
+                    const elements = document.querySelectorAll(selector);
+                    found[selector] = elements.length;
+                });
+                
+                return found;
+            });
+            
+            console.log('🔍 Selectores encontrados:', availableSelectors);
+            
+            // Buscar el mejor selector disponible
+            let productsSelector = null;
+            if (availableSelectors['.ui-search-result'] > 0) {
+                productsSelector = '.ui-search-result';
+            } else if (availableSelectors['.ui-search-item'] > 0) {
+                productsSelector = '.ui-search-item';
+            } else if (availableSelectors['[data-testid="search-result"]'] > 0) {
+                productsSelector = '[data-testid="search-result"]';
+            } else if (availableSelectors['.andes-card'] > 0) {
+                productsSelector = '.andes-card';
+            } else if (availableSelectors['.poly-card'] > 0) {
+                productsSelector = '.poly-card';
+            } else if (availableSelectors['article'] > 0) {
+                productsSelector = 'article';
+            }
+            
+            console.log(`🎯 Usando selector: ${productsSelector}`);
+            
+            if (!productsSelector) {
+                console.log('❌ No se encontraron productos en la página');
+                
+                // Obtener el HTML de la página para debug
+                const pageTitle = await page.title();
+                const currentUrl = page.url();
+                
+                console.log(`📄 Título de página: ${pageTitle}`);
+                console.log(`🔗 URL actual: ${currentUrl}`);
+                
+                // Verificar si hay algún mensaje de "sin resultados"
+                const noResultsMessage = await page.evaluate(() => {
+                    const messages = [
+                        'No hay publicaciones que coincidan con tu búsqueda',
+                        'sin resultados',
+                        'no se encontraron resultados',
+                        'no hay resultados'
+                    ];
+                    
+                    const pageText = document.body.textContent.toLowerCase();
+                    for (const msg of messages) {
+                        if (pageText.includes(msg)) {
+                            return msg;
+                        }
+                    }
+                    return null;
+                });
+                
+                if (noResultsMessage) {
+                    console.log(`⚠️  Mensaje de sin resultados: ${noResultsMessage}`);
+                }
+                
+                return;
+            }
+            
+            // Extraer productos con el selector que funciona
+            const products = await page.evaluate((selector) => {
+                const items = document.querySelectorAll(selector);
                 const results = [];
                 
-                console.log(`Encontrados ${items.length} elementos .ui-search-result`);
+                console.log(`Encontrados ${items.length} elementos con selector: ${selector}`);
                 
                 for (let i = 0; i < Math.min(15, items.length); i++) {
                     const item = items[i];
                     
                     try {
-                        // Datos básicos
-                        const titleElement = item.querySelector('.ui-search-item__title');
+                        // Buscar título con múltiples selectores
+                        let titleElement = item.querySelector('.ui-search-item__title') || 
+                                         item.querySelector('h2') || 
+                                         item.querySelector('h3') ||
+                                         item.querySelector('[data-testid="title"]') ||
+                                         item.querySelector('.title');
+                        
                         const title = titleElement?.textContent?.trim();
                         
-                        const linkElement = item.querySelector('a.ui-search-link') || item.querySelector('a');
+                        // Buscar link
+                        const linkElement = item.querySelector('a.ui-search-link') || 
+                                          item.querySelector('a') ||
+                                          item.querySelector('[href*="MLA"]');
                         const link = linkElement?.href;
                         
                         // Extraer ID del producto (MLA...)
                         const mlMatch = link?.match(/MLA\d+/);
                         const productId = mlMatch ? mlMatch[0] : null;
                         
-                        // Precio actual
-                        const priceElement = item.querySelector('.andes-money-amount__fraction');
+                        // Buscar precio con múltiples selectores
+                        const priceElement = item.querySelector('.andes-money-amount__fraction') ||
+                                           item.querySelector('.price') ||
+                                           item.querySelector('[data-testid="price"]');
                         const price = priceElement?.textContent?.trim();
-                        
-                        // Precio tachado (original)
-                        const originalPriceElement = item.querySelector('.ui-search-price__original-value .andes-money-amount__fraction');
-                        const originalPrice = originalPriceElement?.textContent?.trim();
-                        
-                        // Descuento
-                        const discountElement = item.querySelector('.ui-search-price__discount');
-                        const discount = discountElement?.textContent?.trim();
-                        
-                        // Envío gratis
-                        const shippingElement = item.querySelector('.ui-search-item__shipping');
-                        const freeShipping = shippingElement?.textContent?.includes('gratis') || false;
-                        
-                        // Vendedor
-                        const sellerElement = item.querySelector('.ui-search-official-store-label');
-                        const seller = sellerElement?.textContent?.trim() || 'Vendedor particular';
-                        
-                        // Ubicación
-                        const locationElement = item.querySelector('.ui-search-item__group__element--location');
-                        const location = locationElement?.textContent?.trim() || '';
                         
                         console.log(`Item ${i}: title="${title}", price="${price}", productId="${productId}"`);
                         
                         // Solo agregar si tiene los datos mínimos
-                        if (title && price && productId) {
+                        if (title && productId) {
                             results.push({
                                 productId,
                                 title,
-                                precio: price ? `$${price.replace(/\./g, ',')}` : null,
-                                precioOriginal: originalPrice ? `$${originalPrice.replace(/\./g, ',')}` : null,
-                                descuento: discount || null,
+                                precio: price ? `$${price.replace(/\./g, ',')}` : 'Sin precio',
                                 link,
-                                seller,
-                                location,
-                                freeShipping,
                                 position: i + 1,
                                 extractedAt: new Date().toISOString(),
-                                status: 'active' // Asumimos que está activo si aparece en búsqueda
+                                status: 'active'
                             });
                         }
                         
@@ -95,11 +158,11 @@ Actor.main(async () => {
                 }
                 
                 return results;
-            });
+            }, productsSelector);
             
             console.log(`✅ Encontrados ${products.length} productos`);
             
-            // Procesar cada producto y mostrar como en tu ejemplo
+            // Procesar cada producto
             let totalProcessed = 0;
             for (const product of products) {
                 totalProcessed++;
@@ -109,16 +172,7 @@ Actor.main(async () => {
                 console.log(`  - Status: ${product.status}`);
                 console.log(`  - Título: ${product.title}`);
                 console.log(`  - Precio: ${product.precio}`);
-                if (product.precioOriginal) {
-                    console.log(`  - Precio tachado: ${product.precioOriginal}`);
-                }
-                if (product.descuento) {
-                    console.log(`  - Descuento: ${product.descuento}`);
-                }
                 console.log(`  - Link: ${product.link}`);
-                console.log(`  - Vendedor: ${product.seller}`);
-                console.log(`  - Ubicación: ${product.location}`);
-                console.log(`  - Envío gratis: ${product.freeShipping}`);
                 console.log(`  - Posición: ${product.position}`);
                 
                 // Guardar en Apify Dataset
