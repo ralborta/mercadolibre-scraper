@@ -1,6 +1,6 @@
 {
-  "title": "MercadoLibre Scraper Simple",
-  "description": "Scraper simple para MercadoLibre Argentina",
+  "title": "MercadoLibre Scraper - Kingston Fury Beast",
+  "description": "Scraper específico para memorias Kingston Fury Beast en MercadoLibre Argentina",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
@@ -8,8 +8,8 @@
       "title": "Término de búsqueda",
       "type": "string",
       "description": "¿Qué producto quieres buscar?",
-      "default": "memoria ram",
-      "example": "memoria ram"
+      "default": "Kingston Fury Beast DDR4 16GB",
+      "example": "Kingston Fury Beast DDR4 16GB"
     }
   },
   "required": ["searchTerm"]
