@@ -306,6 +306,127 @@ Actor.main(async () => {
                         const hasFinancing = installments && installments !== '' && 
                                            (installments.includes('cuotas') || installments.includes('x $'));
                         
+                        // Rating/Estrellas del vendedor
+                        const ratingSelectors = [
+                            '.ui-search-reviews__rating',
+                            '.ui-search-item__reviews',
+                            '[data-testid="reviews"]',
+                            '.andes-review',
+                            '.ui-search-reviews__rating-number'
+                        ];
+                        
+                        let rating = '';
+                        let reviewsCount = '';
+                        for (const selectorRating of ratingSelectors) {
+                            const ratingElement = item.querySelector(selectorRating);
+                            if (ratingElement && ratingElement.textContent.trim()) {
+                                rating = ratingElement.textContent.trim();
+                                break;
+                            }
+                        }
+                        
+                        // Buscar reviews en los textos
+                        if (!rating || rating === '') {
+                            const ratingPatterns = allGroupTexts.filter(text => 
+                                text.match(/\d+,\d+/) || // 4,5 estrellas
+                                text.match(/\d+\.\d+/) || // 4.5 estrellas
+                                text.includes('estrellas') ||
+                                text.match(/\(\d+\)/) // (250) reviews
+                            );
+                            
+                            if (ratingPatterns.length > 0) {
+                                rating = ratingPatterns[0];
+                            }
+                        }
+                        
+                        // Tiempo de entrega
+                        const deliverySelectors = [
+                            '.ui-search-item__shipping',
+                            '.ui-search-shipping',
+                            '[data-testid="shipping-info"]',
+                            '.shipping-info'
+                        ];
+                        
+                        let deliveryTime = '';
+                        for (const selectorDelivery of deliverySelectors) {
+                            const deliveryElement = item.querySelector(selectorDelivery);
+                            if (deliveryElement && deliveryElement.textContent.trim()) {
+                                const deliveryText = deliveryElement.textContent.trim();
+                                if (deliveryText.includes('Llega') || deliveryText.includes('días') || deliveryText.includes('mañana')) {
+                                    deliveryTime = deliveryText;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Buscar tiempo de entrega en textos
+                        if (!deliveryTime || deliveryTime === '') {
+                            const deliveryPatterns = allGroupTexts.filter(text => 
+                                text.includes('Llega') ||
+                                text.includes('mañana') ||
+                                text.includes('días') && (text.includes('1-') || text.includes('2-') || text.includes('3-')) ||
+                                text.includes('Envío') && text.includes('día') ||
+                                text.includes('Express') ||
+                                text.includes('Full')
+                            );
+                            
+                            if (deliveryPatterns.length > 0) {
+                                deliveryTime = deliveryPatterns[0];
+                            }
+                        }
+                        
+                        // Stock disponible
+                        const stockSelectors = [
+                            '.ui-search-item__stock',
+                            '[data-testid="stock"]',
+                            '.stock-info'
+                        ];
+                        
+                        let stockInfo = '';
+                        for (const selectorStock of stockSelectors) {
+                            const stockElement = item.querySelector(selectorStock);
+                            if (stockElement && stockElement.textContent.trim()) {
+                                stockInfo = stockElement.textContent.trim();
+                                break;
+                            }
+                        }
+                        
+                        // Buscar info de stock en textos
+                        if (!stockInfo || stockInfo === '') {
+                            const stockPatterns = allGroupTexts.filter(text => 
+                                text.includes('Últimos disponibles') ||
+                                text.includes('Solo quedan') ||
+                                text.includes('Último disponible') ||
+                                text.includes('Pocas unidades') ||
+                                text.includes('Stock limitado') ||
+                                text.match(/quedan \d+/) ||
+                                text.includes('¡Última unidad!')
+                            );
+                            
+                            if (stockPatterns.length > 0) {
+                                stockInfo = stockPatterns[0];
+                            } else {
+                                stockInfo = 'Stock disponible'; // Por defecto si está listado
+                            }
+                        }
+                        
+                        // Mejorar cantidad vendida
+                        let soldQuantityFormatted = soldQuantity;
+                        if (soldQuantity && soldQuantity !== '0') {
+                            // Extraer solo el número si tiene texto extra
+                            const soldMatch = soldQuantity.match(/\d+/);
+                            if (soldMatch) {
+                                const number = parseInt(soldMatch[0]);
+                                if (number > 1000) {
+                                    soldQuantityFormatted = `${Math.floor(number/1000)}k+ vendidos`;
+                                } else if (number > 0) {
+                                    soldQuantityFormatted = `${number} vendidos`;
+                                }
+                            }
+                        } else {
+                            soldQuantityFormatted = 'Sin ventas registradas';
+                        }
+                        
                         // Imagen
                         const imageElement = item.querySelector('img');
                         const imageUrl = imageElement?.src || imageElement?.getAttribute('data-src') || '';
@@ -328,11 +449,15 @@ Actor.main(async () => {
                                 location,
                                 condition,
                                 freeShipping,
-                                soldQuantity,
+                                soldQuantity: soldQuantityFormatted,
                                 imageUrl,
                                 hasDiscount: originalPrice && price && originalPrice !== price,
                                 installments,
-                                hasFinancing
+                                hasFinancing,
+                                rating,
+                                reviewsCount,
+                                deliveryTime,
+                                stockInfo
                             });
                         }
                         
@@ -369,7 +494,18 @@ Actor.main(async () => {
                 console.log(`  - Ubicación: ${product.location}`);
                 console.log(`  - Condición: ${product.condition}`);
                 console.log(`  - Envío gratis: ${product.freeShipping}`);
-                console.log(`  - Vendidos: ${product.soldQuantity}`);
+                console.log(`  - 📦 Cantidad vendida: ${product.soldQuantity}`);
+                if (product.rating) {
+                    console.log(`  - ⭐ Rating: ${product.rating}`);
+                } else {
+                    console.log(`  - ⭐ Rating: No disponible`);
+                }
+                if (product.deliveryTime) {
+                    console.log(`  - 🚚 Entrega: ${product.deliveryTime}`);
+                } else {
+                    console.log(`  - 🚚 Entrega: No especificada`);
+                }
+                console.log(`  - 📋 Stock: ${product.stockInfo}`);
                 if (product.installments) {
                     console.log(`  - Cuotas: ${product.installments}`);
                     console.log(`  - Financiamiento disponible: ${product.hasFinancing ? 'SÍ' : 'NO'}`);
