@@ -131,24 +131,119 @@ Actor.main(async () => {
                         const mlMatch = link?.match(/MLA\d+/);
                         const productId = mlMatch ? mlMatch[0] : null;
                         
-                        // Buscar precio con múltiples selectores
+                        // PRECIO ACTUAL (sin tachar)
                         const priceElement = item.querySelector('.andes-money-amount__fraction') ||
                                            item.querySelector('.price') ||
                                            item.querySelector('[data-testid="price"]');
                         const price = priceElement?.textContent?.trim();
                         
-                        console.log(`Item ${i}: title="${title}", price="${price}", productId="${productId}"`);
+                        // PRECIO TACHADO (original)
+                        const originalPriceElement = item.querySelector('.ui-search-price__original-value .andes-money-amount__fraction') ||
+                                                   item.querySelector('.ui-search-price__second-line .andes-money-amount__fraction') ||
+                                                   item.querySelector('[data-testid="original-price"] .andes-money-amount__fraction');
+                        const originalPrice = originalPriceElement?.textContent?.trim();
+                        
+                        // DESCUENTO
+                        const discountElement = item.querySelector('.ui-search-price__discount') ||
+                                              item.querySelector('[data-testid="discount"]') ||
+                                              item.querySelector('.discount-tag');
+                        const discount = discountElement?.textContent?.trim();
+                        
+                        // ENVÍO GRATIS
+                        const shippingElement = item.querySelector('.ui-search-item__shipping') ||
+                                              item.querySelector('[data-testid="shipping"]');
+                        const freeShipping = shippingElement?.textContent?.includes('gratis') || 
+                                           shippingElement?.textContent?.includes('Gratis') || false;
+                        
+                        // VENDEDOR/TIENDA OFICIAL
+                        const sellerElement = item.querySelector('.ui-search-official-store-label') ||
+                                            item.querySelector('.ui-search-item__store-name') ||
+                                            item.querySelector('[data-testid="store-name"]');
+                        const seller = sellerElement?.textContent?.trim() || 'Vendedor particular';
+                        
+                        // UBICACIÓN
+                        const locationElement = item.querySelector('.ui-search-item__group__element--location') ||
+                                              item.querySelector('[data-testid="location"]') ||
+                                              item.querySelector('.item-location');
+                        const location = locationElement?.textContent?.trim() || '';
+                        
+                        // VENDIDOS (cantidad)
+                        const soldElement = item.querySelector('.ui-search-item__group__element--sold') ||
+                                          item.querySelector('[data-testid="sold-quantity"]') ||
+                                          item.querySelector('.item-sold-quantity');
+                        const soldQuantity = soldElement?.textContent?.trim() || '0';
+                        
+                        // CONDICIÓN (nuevo/usado)
+                        const conditionElement = item.querySelector('.ui-search-item__group__element--condition') ||
+                                               item.querySelector('[data-testid="condition"]') ||
+                                               item.querySelector('.item-condition');
+                        const condition = conditionElement?.textContent?.trim() || 'N/A';
+                        
+                        // CUOTAS
+                        const installmentsElement = item.querySelector('.ui-search-item__group__element--installments') ||
+                                                  item.querySelector('[data-testid="installments"]') ||
+                                                  item.querySelector('.item-installments');
+                        const installments = installmentsElement?.textContent?.trim() || '';
+                        
+                        // RATING/VALORACIÓN
+                        const ratingElement = item.querySelector('.ui-search-reviews__rating') ||
+                                            item.querySelector('[data-testid="rating"]');
+                        const rating = ratingElement?.textContent?.trim() || '';
+                        
+                        // NÚMERO DE REVIEWS
+                        const reviewsElement = item.querySelector('.ui-search-reviews__amount') ||
+                                             item.querySelector('[data-testid="reviews-count"]');
+                        const reviewsCount = reviewsElement?.textContent?.trim() || '0';
+                        
+                        // THUMBNAIL/IMAGEN
+                        const imageElement = item.querySelector('img') ||
+                                           item.querySelector('[data-testid="product-image"]');
+                        const imageUrl = imageElement?.src || imageElement?.getAttribute('data-src') || '';
+                        
+                        // TIPO DE PUBLICACIÓN (extraer de atributos o clases)
+                        const publicationType = item.className?.includes('highlighted') ? 'premium' : 
+                                              item.className?.includes('gold') ? 'gold' : 'clasica';
+                        
+                        console.log(`Item ${i}: title="${title}", price="${price}", originalPrice="${originalPrice}", productId="${productId}"`);
                         
                         // Solo agregar si tiene los datos mínimos
                         if (title && productId) {
                             results.push({
+                                // Datos básicos
                                 productId,
                                 title,
-                                precio: price ? `$${price.replace(/\./g, ',')}` : 'Sin precio',
                                 link,
                                 position: i + 1,
                                 extractedAt: new Date().toISOString(),
-                                status: 'active'
+                                status: 'active',
+                                
+                                // Precios y descuentos
+                                precio: price ? `$${price.replace(/\./g, ',')}` : 'Sin precio',
+                                precioOriginal: originalPrice ? `$${originalPrice.replace(/\./g, ',')}` : null,
+                                descuento: discount || null,
+                                
+                                // Información comercial
+                                seller,
+                                location,
+                                condition,
+                                freeShipping,
+                                soldQuantity,
+                                installments,
+                                
+                                // Valoraciones
+                                rating,
+                                reviewsCount,
+                                
+                                // Multimedia
+                                imageUrl,
+                                
+                                // Metadata
+                                publicationType,
+                                
+                                // Datos adicionales para análisis
+                                hasDiscount: originalPrice && price && originalPrice !== price,
+                                discountPercentage: originalPrice && price ? 
+                                    Math.round(((parseFloat(originalPrice.replace(/[,.]/g, '')) - parseFloat(price.replace(/[,.]/g, ''))) / parseFloat(originalPrice.replace(/[,.]/g, ''))) * 100) : 0
                             });
                         }
                         
@@ -171,8 +266,30 @@ Actor.main(async () => {
                 console.log(`Procesando: ${product.productId}`);
                 console.log(`  - Status: ${product.status}`);
                 console.log(`  - Título: ${product.title}`);
-                console.log(`  - Precio: ${product.precio}`);
+                console.log(`  - Precio actual: ${product.precio}`);
+                if (product.precioOriginal) {
+                    console.log(`  - Precio original: ${product.precioOriginal}`);
+                }
+                if (product.descuento) {
+                    console.log(`  - Descuento: ${product.descuento}`);
+                }
+                if (product.hasDiscount) {
+                    console.log(`  - Porcentaje descuento: ${product.discountPercentage}%`);
+                }
+                console.log(`  - Vendedor: ${product.seller}`);
+                console.log(`  - Ubicación: ${product.location}`);
+                console.log(`  - Condición: ${product.condition}`);
+                console.log(`  - Envío gratis: ${product.freeShipping}`);
+                console.log(`  - Vendidos: ${product.soldQuantity}`);
+                if (product.installments) {
+                    console.log(`  - Cuotas: ${product.installments}`);
+                }
+                if (product.rating) {
+                    console.log(`  - Rating: ${product.rating} (${product.reviewsCount} reviews)`);
+                }
+                console.log(`  - Tipo publicación: ${product.publicationType}`);
                 console.log(`  - Link: ${product.link}`);
+                console.log(`  - Imagen: ${product.imageUrl}`);
                 console.log(`  - Posición: ${product.position}`);
                 
                 // Guardar en Apify Dataset
